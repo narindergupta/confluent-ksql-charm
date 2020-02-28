@@ -1,0 +1,30 @@
+"name": "confluent-ksql"
+"summary": "Schema Registry stores a versioned history of all schemas"
+"maintainer": "narindergupta <narinder.gupta@canonical.com>"
+"description": |
+  Confluent Schema Registry provides a RESTful interface for developers to
+  define standard schemas for their events, share them across the organization
+  and safely evolve them in a way that is backward compatible and future proof.
+  Schema Registry stores a versioned history of all schemas and allows the
+  evolution of schemas according to the configured compatibility settings. It
+  also provides a plugin to clients that handles schema storage and retrieval
+  for messages that are sent in Avro format.
+"tags":
+  # Replace "misc" with one or more whitelisted tags from this list:
+  # https://jujucharms.com/docs/stable/authors-charm-metadata
+- "misc"
+"series":
+- "bionic"
+"requires":
+  "certificates":
+    "interface": "tls-certificates"
+  "zookeeper":
+    "interface": "zookeeper"
+"provides":
+  "nrpe-external-master":
+    "interface": "nrpe-external-master"
+    "scope": "container"
+  "local-monitors":
+    "interface": "local-monitors"
+    "scope": "container"
+"subordinate": !!bool "false"

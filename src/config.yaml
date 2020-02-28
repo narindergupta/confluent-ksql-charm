@@ -1,0 +1,149 @@
+"options":
+  "extra_packages":
+    "description": >
+      Space separated list of extra deb packages to install.
+    "type": "string"
+    "default": ""
+  "package_status":
+    "default": "install"
+    "type": "string"
+    "description": >
+      The status of service-affecting packages will be set to this
+      value in the dpkg database. Valid values are "install" and "hold".
+  "install_sources":
+    "description": >
+      List of extra apt sources, per charm-helpers standard
+      format (a yaml list of strings encoded as a string). Each source
+      may be either a line that can be added directly to
+      sources.list(5), or in the form ppa:<user>/<ppa-name> for adding
+      Personal Package Archives, or a distribution component to enable.
+    "type": "string"
+    "default": "deb [arch=amd64] https://packages.confluent.io/deb/5.4 stable main"
+  "install_keys":
+    "description": >
+      List of signing keys for install_sources package sources, per
+      charmhelpers standard format (a yaml list of strings encoded as
+      a string). The keys should be the full ASCII armoured GPG public
+      keys. While GPG key ids are also supported and looked up on a
+      keyserver, operators should be aware that this mechanism is
+      insecure. null can be used if a standard package signing key is
+      used that will already be installed on the machine, and for PPA
+      sources where the package signing key is securely retrieved from
+      Launchpad.
+    "type": "string"
+    "default": |
+      - |
+          -----BEGIN PGP PUBLIC KEY BLOCK-----
+          Version: GnuPG v1
+     
+          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
+          42IcNGjHzVqDvw==
+          =m27L
+          -----END PGP PUBLIC KEY BLOCK-----
+  "nagios_context":
+    "default": "juju"
+    "type": "string"
+    "description": |
+      Used by the nrpe subordinate charms.
+      A string that will be prepended to instance name to set the host name
+      in nagios. So for instance the hostname would be something like:
+          juju-myservice-0
+      If you're running multiple environments with the same services in them
+      this allows you to differentiate between them.
+  "nagios_servicegroups":
+    "default": ""
+    "type": "string"
+    "description": |
+      A comma-separated list of nagios servicegroups.
+      If left empty, the nagios_context will be used as the servicegroup
+  "web_listen_uri":
+    "type": "string"
+    "default": "http://0.0.0.0:8088"
+    "description": "Used this URL to advertized where regostry listens"
+  "confluent_schema_url":
+    "type": "string"
+    "default": "http://localhost:8081"
+    "description": "Used this URL to advertized where regostry listens"
+  "kafka_bootstrap":
+    "type": "string"
+    "default": "localhost:9092"
+    "description": "kafka broker to be used"
+  "log_dir":
+    "type": "string"
+    "default": "/var/lib/ksql/kafka-streams"
+    "description": "kafka log direcotry to use"
+  "extra_config":
+    "default": ""
+    "type": "string"
+    "description": |-
+      Base 64 encodede string for registry properties tuning file.
+  ssl_cert:
+    type: string
+    default:
+    description: |
+      Base64-encoded SSL certificate to install and use for Horizon.
+      .
+      juju config confluent-schema-registry  ssl_cert="$(cat cert| base64)" \
+                               ssl_key="$(cat key| base64)"
+  ssl_key:
+    type: string
+    default:
+    description: |
+      Base64-encoded SSL key to use with certificate specified as ssl_cert.
+  ssl_ca:
+    type: string
+    default:
+    description: |
+      Base64-encoded certificate authority. This CA is used in conjunction
+      with keystone https endpoints and must, therefore, be the same CA
+      used by any endpoint configured as https/ssl.
+  ssl_key_password:
+    type: string
+    default:
+    description: |
+      SSL key password.
