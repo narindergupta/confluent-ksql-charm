@@ -9,7 +9,7 @@ evolution of schemas according to the configured compatibility settings. It also
 provides a plugin to clients that handles schema storage and retrieval for
 messages that are sent in Avro format.
 
-This charm will relate to zookeeper for kafka integration. Also for certificates
+This charm will relate to certificates
 it will use easyrsa or vault as both provide tls-certificate interfaces.
 
 This charm provides Confluent Schema Registry service.
@@ -19,12 +19,12 @@ in the Juju GUI.
 
 # Usage
 
+juju deploy confulent-ksql
 juju deploy confulent-schema-registry
-juju deploy -n 3 zookeeper
 juju deploy -n 3 kafka
 juju deploy easyrsa
 
-confulent-schema-registry listens on all IP address at port 8081.
+confulent-ksql listens on all IP address at port 8088.
 
 ## Known Limitations and Issues
 

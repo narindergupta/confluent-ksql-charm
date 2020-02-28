@@ -35,18 +35,6 @@ from charms.layer.confluent_ksql import (keystore_password,
                              Ksql, KSQL_PORT, KSQL_DATA)
 
 
-@when('apt.installed.confluent-ksql')
-@when_not('zookeeper.joined')
-def waiting_for_zookeeper():
-    hookenv.status_set('blocked', 'waiting for relation to zookeeper')
-
-
-@when('apt.installed.confluent-ksql', 'zookeeper.joined')
-@when_not('confluent_ksql.started', 'zookeeper.ready')
-def waiting_for_zookeeper_ready(zk):
-    hookenv.status_set('waiting', 'waiting for zookeeper to become ready')
-
-
 @hook('upgrade-charm')
 def upgrade_charm():
     remove_state('confluent_ksql.nrpe_helper.installed')
@@ -68,16 +56,14 @@ def waiting_for_certificates():
 
 @when(
     'apt.installed.confluent-ksql',
-    'zookeeper.ready',
     'confluent_ksql.ca.keystore.saved',
     'confluent_ksql.server.keystore.saved'
 )
 @when_not('confluent_ksql.started')
-def configure_confluent_ksql(zk):
+def configure_confluent_ksql():
     hookenv.status_set('maintenance', 'setting up confluent_ksql')
     ksql = Ksql()
-    zks = zk.zookeepers()
-    ksql.install(zk_units=zks)
+    ksql.install()
     hookenv.open_port(KSQL_PORT)
     set_state('confluent_ksql.started')
     hookenv.status_set('active', 'ready')
@@ -86,8 +72,8 @@ def configure_confluent_ksql(zk):
     hookenv.application_version_set(ksqlversion)
 
 
-@when('config.changed', 'zookeeper.ready')
-def config_changed(zk):
+@when('config.changed')
+def config_changed():
     for k, v in hookenv.config().items():
         if k.startswith('nagios') and data_changed('confluent_ksql.config.{}'.format(k),
                                                    v):
@@ -95,24 +81,6 @@ def config_changed(zk):
             remove_state('confluent_ksql.nrpe_helper.registered')
     # Something must have changed if this hook fired, trigger reconfig
     remove_state('confluent_ksql.started')
-
-
-@when('confluent_ksql.started', 'zookeeper.ready')
-def configure_confluent_ksql_zookeepers(zk):
-    """Configure ready zookeepers and restart kafka if needed.
-    As zks come and go, server.properties will be updated. When that file
-    changes, restart Kafka and set appropriate status messages.
-    """
-    zks = zk.zookeepers()
-    if not((
-            data_changed('zookeepers', zks))):
-        return
-
-    hookenv.log('Checking Zookeeper configuration')
-    hookenv.status_set('maintenance', 'updating zookeeper instances')
-    ksql = Ksql()
-    ksql.install(zk_units=zks)
-    hookenv.status_set('active', 'ready')
 
 
 @when('config.changed.ssl_key_password', 'confluent_ksql.started')
@@ -313,14 +281,3 @@ def send_data():
         tls_client.request_client_cert(common_name, sans,
                                    crt_path=client_crt_path,
                                    key_path=client_key_path)
-
-
-@when('confluent_ksql.started')
-@when_not('zookeeper.ready')
-def stop_kafka_waiting_for_zookeeper_ready():
-    hookenv.status_set('maintenance', 'zookeeper not ready, stopping confluent_ksql')
-    confluent_ksql = confluent_ksql()
-    hookenv.close_port(KSQL_PORT)
-    confluent_ksql.stop()
-    remove_state('confluent_ksql.started')
-    hookenv.status_set('waiting', 'waiting for zookeeper to become ready')

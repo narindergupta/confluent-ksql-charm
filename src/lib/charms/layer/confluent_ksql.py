@@ -42,23 +42,15 @@ client_key_path = cert_path / 'client.key'
 
 
 class Ksql(object):
-    def install(self, zk_units=[]):
+    def install(self):
         '''
         Generates ksql.properties with the current
         system state.
         '''
-        zks = []
-        for unit in zk_units or self.get_zks():
-            ip = resolve_private_address(unit['host'])
-            zks.append('%s:%s' % (ip, unit['port']))
-        zks.sort()
-        zk_connect = ','.join(zks)
-
         config = hookenv.config()
         log_dir = config['log_dir']
 
         context = {
-            'zookeeper_connection_string': zk_connect,
             'keystore_password': keystore_password(),
             'ca_keystore': os.path.join(
                 KSQL_DATA,
@@ -129,18 +121,6 @@ class Ksql(object):
         Restarts the registry service.
         '''
         return host.service_running(KSQL_SERVICE)
-
-    def get_zks(self):
-        '''
-        Will attempt to read zookeeper nodes from the zookeeper.joined state.
-
-        If the flag has never been set, an empty list will be returned.
-        '''
-        zk = RelationBase.from_flag('zookeeper.joined')
-        if zk:
-            return zk.zookeepers()
-        else:
-            return []
 
     def version(self):
         '''

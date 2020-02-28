@@ -115,7 +115,7 @@
     "description": "kafka broker to be used"
   "log_dir":
     "type": "string"
-    "default": "/var/lib/ksql/kafka-streams"
+    "default": "/var/lib/kafka-streams"
     "description": "kafka log direcotry to use"
   "extra_config":
     "default": ""

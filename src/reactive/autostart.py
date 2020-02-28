@@ -5,7 +5,7 @@ from charmhelpers.core import hookenv
 from charms.reactive import when
 
 
-@when('confluent_ksql.started', 'zookeeper.ready')
+@when('confluent_ksql.started')
 def autostart_service():
     '''
     Attempt to restart the service if it is not running.

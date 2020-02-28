@@ -3,7 +3,6 @@
 - "layer:basic"
 - "layer:status"
 - "interface:nrpe-external-master"
-- "interface:zookeeper"
 - "layer:apt"
 - "layer:nagios"
 - "interface:local-monitors"

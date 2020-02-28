@@ -18,8 +18,6 @@
 "requires":
   "certificates":
     "interface": "tls-certificates"
-  "zookeeper":
-    "interface": "zookeeper"
 "provides":
   "nrpe-external-master":
     "interface": "nrpe-external-master"
