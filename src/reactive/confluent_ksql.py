@@ -47,6 +47,9 @@ def upgrade_charm():
 )
 @when('apt.installed.confluent-ksql')
 def waiting_for_certificates():
+    ksql = Ksql()
+    ksql.install()
+    ksql.daemon_reload()
     config = hookenv.config()
     if config['ssl_cert']:
         set_state('certificates.available')
@@ -63,7 +66,11 @@ def waiting_for_certificates():
 def configure_confluent_ksql():
     hookenv.status_set('maintenance', 'setting up confluent_ksql')
     ksql = Ksql()
+    if ksql.is_running():
+        ksql.stop()
     ksql.install()
+    if not ksql.is_running():
+        ksql.start()
     hookenv.open_port(KSQL_PORT)
     set_state('confluent_ksql.started')
     hookenv.status_set('active', 'ready')

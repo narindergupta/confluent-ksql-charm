@@ -33,6 +33,8 @@ KSQL_SERVICE = '{}.service'.format(KSQL)
 KSQL_DATA = '/etc/ksql/'
 KSQL_CONF = '/lib/systemd/system/'
 KSQL_PORT = 8088
+KSQL_SVC_CONF = '/etc/systemd/system/{}.d'.format(KSQL_SERVICE)
+KSQL_BIN = '/usr/bin/'
 ca_crt_path = '/usr/local/share/ca-certificates/confluent-ksql.crt'
 cert_path = Path('/etc/ksql/')
 server_crt_path = cert_path / 'server.crt'
@@ -68,25 +70,41 @@ class Ksql(object):
             'kafka_bootstrap': config['kafka_bootstrap'],
             'listeners': config['web_listen_uri'],
             'confluent_schema_url': config['confluent_schema_url'],
-            'log_dir': log_dir
+            'log_dir': log_dir,
+            'jmx_port': config['jmx_port'],
+            'service_environment': config['service_environment']
         }
 
         os.makedirs(log_dir, mode=0o770, exist_ok=True)
         shutil.chown(log_dir, user='cp-ksql', group='confluent')
+        os.makedirs(KSQL_SVC_CONF, mode=0o644, exist_ok=True)
+        shutil.chown(KSQL_SVC_CONF, user='root')
+
+        for file_config in ('ksql-server.properties',
+                            'broker.env',
+                            'connect.properties'):
+            render(
+                source=file_config,
+                target=os.path.join(KSQL_DATA, file_config),
+                owner='root',
+                perms=0o644,
+                context=context
+            )
 
         render(
-            source='ksql-server.properties',
-            target=os.path.join(KSQL_DATA, 'ksql-server.properties'),
+            source='override.conf',
+            target=os.path.join(KSQL_SVC_CONF,
+                                'confluent-ksql.service.conf'),
             owner='root',
             perms=0o644,
             context=context
         )
 
         render(
-            source='connect.properties',
-            target=os.path.join(KSQL_DATA, 'connect.properties'),
+            source='confluent-ksql-wrapper.sh',
+            target=os.path.join(KSQL_BIN, 'confluent-ksql-wrapper.sh'),
             owner='root',
-            perms=0o644,
+            perms=0o755,
             context=context
         )
 
@@ -95,26 +113,34 @@ class Ksql(object):
             outfile.write(extraconfig)
             outfile.close()
 
-        self.restart()
+    def daemon_reload(self):
+        '''
+        Run Daemon Reload needed whenever there is change in system service.
+        '''
+        host.service("daemon-reload","")
 
     def restart(self):
         '''
-        Restarts the registry service.
+        Restarts the Registry service.
         '''
         host.service_restart(KSQL_SERVICE)
 
     def start(self):
         '''
-        Starts the registry service.
+        Starts the Registry service.
         '''
-        host.service_reload(KSQL_SERVICE)
+        if self.is_running():
+            host.service_reload(KSQL_SERVICE)
+        else:
+            host.service_start(KSQL_SERVICE)
 
     def stop(self):
         '''
-        Stops the registry service.
+        Stops the Registry service.
 
         '''
-        host.service_stop(KSQL_SERVICE)
+        if self.is_running():
+            host.service_stop(KSQL_SERVICE)
 
     def is_running(self):
         '''
