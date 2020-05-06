@@ -1,0 +1,6 @@
+gate_bundles:
+        - bionic
+smoke_bundles:
+        - bionic
+tests:
+        - tests.basic_deployment.BasicDeployment

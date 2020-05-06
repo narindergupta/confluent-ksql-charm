@@ -1,0 +1,5 @@
+series: bionic
+services:
+  confluent-ksql:
+    charm:  cs:~narindergupta/confluent-ksql
+    num_units: 1
