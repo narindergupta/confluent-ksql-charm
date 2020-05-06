@@ -44,13 +44,12 @@ client_key_path = cert_path / 'client.key'
 
 
 class Ksql(object):
-    def install(self):
+    def install(self, log_dir='logs'):
         '''
         Generates ksql.properties with the current
         system state.
         '''
         config = hookenv.config()
-        log_dir = config['log_dir']
 
         context = {
             'keystore_password': keystore_password(),
@@ -68,15 +67,18 @@ class Ksql(object):
             ),
             'reghostname': hookenv.unit_private_ip(),
             'kafka_bootstrap': config['kafka_bootstrap'],
+            'topic_replication': config['topic_replication'],
             'listeners': config['web_listen_uri'],
             'confluent_schema_url': config['confluent_schema_url'],
-            'log_dir': log_dir,
+            'log_dirs': log_dir,
             'jmx_port': config['jmx_port'],
             'service_environment': config['service_environment']
         }
 
-        os.makedirs(log_dir, mode=0o770, exist_ok=True)
-        shutil.chown(log_dir, user='cp-ksql', group='confluent')
+        if log_dir:
+            os.makedirs(log_dir, mode=0o755, exist_ok=True)
+            shutil.chown(log_dir, user='cp-ksql', group='confluent')
+
         os.makedirs(KSQL_SVC_CONF, mode=0o644, exist_ok=True)
         shutil.chown(KSQL_SVC_CONF, user='root')
 

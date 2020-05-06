@@ -107,15 +107,19 @@
     "description": "Used this URL to advertized where regostry listens"
   "confluent_schema_url":
     "type": "string"
-    "default": "http://localhost:8081"
-    "description": "Used this URL to advertized where regostry listens"
+    "default": ""
+    "description": "Schema registry server http://localhost:8081"
   "kafka_bootstrap":
     "type": "string"
-    "default": "localhost:9092"
-    "description": "kafka broker to be used"
+    "default": ""
+    "description": "kafka broker to be used localhost:9092"
+  "topic_replication":
+    "type": "int"
+    "default": 1
+    "description": "Topic repliation for KSQL"
   "log_dir":
     "type": "string"
-    "default": "/var/lib/kafka-streams"
+    "default": ''
     "description": "kafka log direcotry to use"
   "extra_config":
     "default": ""

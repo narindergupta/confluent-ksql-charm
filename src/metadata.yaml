@@ -25,4 +25,12 @@
   "local-monitors":
     "interface": "local-monitors"
     "scope": "container"
+storage:
+  logs:
+    type: filesystem
+    description: Directory where log files will be stored
+    minimum-size: 20M
+    location: /media/ksql
+    multiple:
+      range: "0-1"
 "subordinate": !!bool "false"

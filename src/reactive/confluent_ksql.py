@@ -42,14 +42,22 @@ def upgrade_charm():
 
 
 @when_not(
+    'confluent_ksql.storage.logs.attached'
+)
+@when('apt.installed.confluent-ksql')
+def waiting_for_storage_attach():
+    if hookenv.config()['log_dir']:
+        # It seems directory has been already mounted to unit.
+        set_state('kafka.storage.logs.attached')
+    else:
+        hookenv.status_set('waiting', 'waiting for storage attachment')
+
+@when_not(
     'confluent_ksql.ca.keystore.saved',
     'confluent_ksql.server.keystore.saved'
 )
 @when('apt.installed.confluent-ksql')
 def waiting_for_certificates():
-    ksql = Ksql()
-    ksql.install()
-    ksql.daemon_reload()
     config = hookenv.config()
     if config['ssl_cert']:
         set_state('certificates.available')
@@ -64,11 +72,16 @@ def waiting_for_certificates():
 )
 @when_not('confluent_ksql.started')
 def configure_confluent_ksql():
-    hookenv.status_set('maintenance', 'setting up confluent_ksql')
+    hookenv.status_set('maintenance', 'setting up kafka')
+    if hookenv.config()['log_dir']:
+       log_dir = hookenv.config()['log_dir']
+    else:
+       log_dir = unitdata.kv().get('confluent_ksql.storage.log_dir')
+    data_changed('confluent_ksql.storage.log_dir', log_dir)
     ksql = Ksql()
     if ksql.is_running():
         ksql.stop()
-    ksql.install()
+    ksql.install(log_dir=log_dir)
     if not ksql.is_running():
         ksql.start()
     hookenv.open_port(KSQL_PORT)
